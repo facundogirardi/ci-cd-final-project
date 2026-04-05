@@ -20,3 +20,71 @@ spec:
         python -m pip install --upgrade pip wheel
         pip install -r requirements.txt
         nosetests $(params.args)
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: output
+spec:
+  workspaces:
+    - name: output
+  tasks:
+    - name: cleanup
+      taskRef:
+        name: cleanup
+      workspaces:
+        - name: source
+          workspace: output
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: flake8
+spec:
+  workspaces:
+    - name: output
+  steps:
+    - name: run-flake8
+      image: python:3.9
+      script: |
+        #!/bin/sh
+        pip install flake8
+        flake8 .
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: output
+spec:
+  params:
+    - name: app-name
+      type: string
+    - name: build-image
+      type: string
+  workspaces:
+    - name: output
+  tasks:
+    - name: cleanup
+      taskRef:
+        name: cleanup
+    - name: git-clone
+      taskRef:
+        name: git-clone
+    - name: flake8
+      taskRef:
+        name: flake8
+    - name: nose
+      taskRef:
+        name: nose
+    - name: buildah
+      taskRef:
+        name: buildah
+    - name: deploy
+      taskRef:
+        name: openshift-client
+      params:
+        - name: SCRIPT
+          value: |
+            oc create deployment $(params.app-name) \
+              --image=$(params.build-image) \
+              --dry-run=client -o yaml | oc apply -f -
