@@ -34,7 +34,7 @@ spec:
         - name: output
           workspace: output
 
-    - name: nose
+    - name: run-unit-tests-with-nose
       taskRef:
         name: nose
       runAfter:
@@ -47,7 +47,7 @@ spec:
       taskRef:
         name: buildah
       runAfter:
-        - nose
+        - run-unit-tests-with-nose
       workspaces:
         - name: output
           workspace: output
