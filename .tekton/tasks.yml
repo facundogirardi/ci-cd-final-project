@@ -1,57 +1,4 @@
 apiVersion: tekton.dev/v1beta1
-kind: Task
-metadata:
-  name: nose
-spec:
-  workspaces:
-    - name: source
-  params:
-    - name: args
-      description: Arguments to pass to nose
-      type: string
-      default: "-v"
-  steps:
-    - name: nosetests
-      image: python:3.9-slim
-      workingDir: $(workspaces.source.path)
-      script: |
-        #!/bin/bash
-        set -e
-        python -m pip install --upgrade pip wheel
-        pip install -r requirements.txt
-        nosetests $(params.args)
----
-apiVersion: tekton.dev/v1beta1
-kind: Pipeline
-metadata:
-  name: output
-spec:
-  workspaces:
-    - name: output
-  tasks:
-    - name: cleanup
-      taskRef:
-        name: cleanup
-      workspaces:
-        - name: source
-          workspace: output
----
-apiVersion: tekton.dev/v1beta1
-kind: Task
-metadata:
-  name: flake8
-spec:
-  workspaces:
-    - name: output
-  steps:
-    - name: run-flake8
-      image: python:3.9
-      script: |
-        #!/bin/sh
-        pip install flake8
-        flake8 .
----
-apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: output
@@ -67,21 +14,49 @@ spec:
     - name: cleanup
       taskRef:
         name: cleanup
+      workspaces:
+        - name: source
+          workspace: output
+
     - name: git-clone
       taskRef:
         name: git-clone
+      workspaces:
+        - name: output
+          workspace: output
+
     - name: flake8
       taskRef:
         name: flake8
+      runAfter:
+        - git-clone
+      workspaces:
+        - name: output
+          workspace: output
+
     - name: nose
       taskRef:
         name: nose
+      runAfter:
+        - git-clone
+      workspaces:
+        - name: source
+          workspace: output
+
     - name: buildah
       taskRef:
         name: buildah
+      runAfter:
+        - nose
+      workspaces:
+        - name: output
+          workspace: output
+
     - name: deploy
       taskRef:
         name: openshift-client
+      runAfter:
+        - buildah
       params:
         - name: SCRIPT
           value: |
