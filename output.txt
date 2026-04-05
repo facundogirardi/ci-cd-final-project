@@ -1,0 +1,8 @@
+[2026-04-06 09:30:28 +0000] [INFO] Starting gunicorn 20.1.0
+[2026-04-06 09:30:29 +0000] [INFO] Listening at http://0.0.0.0:8000 (1)
+[2026-04-06 09:30:29 +0000] [INFO] Using worker: sync
+[2026-04-06 09:30:29 +0000] [INFO] Booting worker wth pid: 7
+[Log handlers] Logging handdler estabblished
+[__init__] ********************************************
+[__init__] ********** S E R V I C E R U N N I N G *****
+[__init__] ********************************************
