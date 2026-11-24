@@ -2,8 +2,7 @@
 Counter API Service Test Suite
 
 Test cases can be run with the following:
-  nosetests -v --with-spec --spec-color
-  coverage report -m
+  pytest
 """
 from unittest import TestCase
 from service.common import status  # HTTP Status Codes

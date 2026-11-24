@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM python:3.12-slim
 
 # Establish a working folder
 WORKDIR /app
@@ -17,6 +17,6 @@ RUN useradd -m -r service && \
 USER service
 
 # Run the service on port 8000
-ENV PORT 8000
+ENV PORT=8000
 EXPOSE $PORT
 CMD ["gunicorn", "service:app", "--bind", "0.0.0.0:8000"]
